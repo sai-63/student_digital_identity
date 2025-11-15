@@ -1,23 +1,31 @@
-self.addEventListener('push', function (event) {
-    console.log('Push received.');
-  if (event.data) {
-    const data = event.data.json()
-    const options = {
-      body: data.body,
-      icon: data.icon || '/icon.png',
-      badge: '/badge.png',
-      vibrate: [100, 50, 100],
-      data: {
-        dateOfArrival: Date.now(),
-        primaryKey: '2',
-      },
-    }
-    event.waitUntil(self.registration.showNotification(data.title, options))
+self.addEventListener("push", (event) => {
+  console.log("Push received:", event);
+
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    console.error("Push parse error:", e);
   }
-})
- 
-self.addEventListener('notificationclick', function (event) {
-  console.log('Notification click received.')
-  event.notification.close()
-  event.waitUntil(clients.openWindow('<https://your-website.com>'))
-})
+
+  const title = data.title || "Notification";
+  const options = {
+    body: data.body || "",
+    icon: "/icon.png",
+    badge: "/badge.png",
+    data: {
+      url: data.url || "/",
+      dateOfArrival: Date.now()
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url || "/")
+  );
+});
