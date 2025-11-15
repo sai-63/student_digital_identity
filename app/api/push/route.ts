@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import webpush from 'web-push'
+import webpush from 'web-push';
 
 // Configure VAPID details using environment variables
 webpush.setVapidDetails(
