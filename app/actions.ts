@@ -1,46 +1,29 @@
-'use server'
+'use client'
 
-const webpush = require('web-push')
- 
-webpush.setVapidDetails(
-  '<mailto:your-email@example.com>',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
- 
-let subscription: PushSubscription | null = null
- 
+// Client-side wrapper: forward requests to the server API that uses `web-push`.
 export async function subscribeUser(sub: PushSubscription) {
-  subscription = sub
-  // In a production environment, you would want to store the subscription in a database
-  // For example: await db.subscriptions.create({ data: sub })
-  return { success: true }
+  const res = await fetch('/api/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'subscribe', subscription: sub }),
+  })
+  return res.json()
 }
- 
+
 export async function unsubscribeUser() {
-  subscription = null
-  // In a production environment, you would want to remove the subscription from the database
-  // For example: await db.subscriptions.delete({ where: { ... } })
-  return { success: true }
+  const res = await fetch('/api/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'unsubscribe' }),
+  })
+  return res.json()
 }
- 
+
 export async function sendNotification(message: string) {
-  if (!subscription) {
-    throw new Error('No subscription available')
-  }
- 
-  try {
-    await webpush.sendNotification(
-      subscription,
-      JSON.stringify({
-        title: 'Test Notification',
-        body: message,
-        icon: '/icon.png',
-      })
-    )
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending push notification:', error)
-    return { success: false, error: 'Failed to send notification' }
-  }
+  const res = await fetch('/api/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'send', message }),
+  })
+  return res.json()
 }
