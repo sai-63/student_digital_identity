@@ -1,19 +1,22 @@
 self.addEventListener("push", (event) => {
-  console.log("Push received:", event);
+  console.log("PUSH RAW EVENT:", event);
 
-  let data = {};
+  let data = { title: "🔥 IT WORKS!", body: "You finally got a notification!" };
 
   try {
-    data = event.data ? JSON.parse(event.data.text()) : {};
-  } catch (e) {
-    console.error("Push parse error:", e);
+    if (event.data) {
+      const text = event.data.text();
+      console.log("PUSH RAW TEXT:", text);
+      data = JSON.parse(text || "{}");
+    }
+  } catch (err) {
+    console.error("PUSH PARSE ERROR:", err);
   }
 
-  const title = data.title || "Notification";
-  const options = {
-    body: data.body || "No body",
-    icon: "/icon.png",
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon.png",
+    })
+  );
 });
